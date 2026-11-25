@@ -42,3 +42,18 @@ Flux is an evolving prototype, not a full Premiere Pro replacement yet. Audio fi
 ## Browser support
 
 Use a recent desktop version of Chrome or Edge for the best MediaRecorder and IndexedDB support. Firefox may work, but available export formats and codecs can differ. Storage limits depend on the browser and available device space.
+
+
+## Windows desktop app
+
+Flux can also be packaged as a Windows desktop application using Electron. The desktop wrapper loads the same local HTML/CSS/JavaScript editor, so the GitHub Pages browser version remains available.
+
+### Automated Windows releases
+
+Every push to `main` runs `.github/workflows/release.yml`. GitHub Actions builds:
+- `Flux-Setup-<version>.0.exe`: Inno Setup installer with Start Menu shortcut and optional desktop shortcut.
+- `Flux-<version>.0-Portable.exe`: portable Electron executable.
+
+Release tags increment from `v1.0`, `v1.1`, `v1.2`, and so on. The installer uses a stable application ID. If an older Flux version is installed, setup asks whether to continue; accepting upgrades the existing installation in place. Flux project data remains in the app's local browser storage profile and is not intentionally removed by the installer.
+
+To run the desktop app from source on Windows, install Node.js 22 or newer, then run `npm install` and `npm start`.
