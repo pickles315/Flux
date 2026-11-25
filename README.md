@@ -21,6 +21,8 @@ Open `index.html` locally, or enable GitHub Pages for this repository:
 - Drag clips to move them; drag either clip edge to trim.
 - Trimming cannot extend past the original source media duration.
 - Clip properties, split, delete, timeline zoom, and keyboard shortcuts for playback/save/delete.
+- Separate source and program monitors: preview selected media before adding it to the timeline, alongside the project output preview.
+- Premiere-style workspace layout with media bin, source monitor, program monitor, properties inspector, and a full-width timeline.
 - Preview dimensions adapt to the selected project aspect ratio.
 - Export dialog with file name, WebM/MP4 format selection when supported by the browser, and quality presets.
 - Export progress and cancellation.
