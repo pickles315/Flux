@@ -35,7 +35,7 @@
 <div id="exportModal" class="modal-backdrop hidden"><div class="modal"><h2>Export video</h2><div class="form-grid"><label class="field full">File name<input id="exportName" value="Flux video"></label><label class="field">Format<select id="exportFormat"><option value="webm">WebM</option><option value="mp4">MP4</option></select></label><label class="field">Quality<select id="exportQuality"><option value="low">Low · smaller file</option><option value="medium">Medium</option><option value="high" selected>High</option><option value="ultra">Very high · larger file</option></select></label></div><div id="exportProgressWrap" class="hidden"><div class="export-progress"><div id="exportProgress"></div></div><div id="exportStatus" class="export-note">Preparing export…</div></div><div class="export-note" id="formatNote"></div><div class="modal-actions"><button id="cancelExport">Close</button><button class="primary" id="startExport">Start export</button></div></div></div>
 <script>
 (()=>{'use strict';
-const DB='flux-editor-db',STORE='records';let db,assets=[],clips=[],projects=[],currentProjectId=null,selectedAsset=null,selectedClip=null,playhead=0,scale=80,playing=false,lastTick=0,raf=0,projectName='Untitled Project',previewObjectUrl=null,sourceObjectUrl=null,project={ratio:'16:9',width:1920,height:1080,fps:30},videoTracks=1,audioTracks=1,dragState=null,exporting=false,exportRecorder=null,exportCancel=false;
+const DB='flux-editor-db',STORE='records';let db,assets=[],clips=[],projects=[],currentProjectId=null,selectedAsset=null,selectedClip=null,playhead=0,scale=80,playing=false,lastTick=0,raf=0,projectName='Untitled Project',previewObjectUrls=[],sourceObjectUrl=null,project={ratio:'16:9',width:1920,height:1080,fps:30},videoTracks=1,audioTracks=1,dragState=null,exporting=false,exportRecorder=null,exportCancel=false;
 const $=id=>document.getElementById(id),uid=()=>Math.random().toString(36).slice(2,10),fmt=t=>{t=Math.max(0,Number(t)||0);let m=Math.floor(t/60),s=Math.floor(t%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')},duration=()=>Math.max(5,...clips.map(c=>c.start+c.duration+1));
 function openDB(){return new Promise((res,rej)=>{let q=indexedDB.open(DB,1);q.onupgradeneeded=()=>q.result.createObjectStore(STORE,{keyPath:'id'});q.onsuccess=()=>{db=q.result;res()};q.onerror=()=>rej(q.error)})}
 function put(v){return new Promise((res,rej)=>{let t=db.transaction(STORE,'readwrite');t.objectStore(STORE).put(v);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
@@ -85,11 +85,11 @@ function renderPreview(){
 let frame=$('previewFrame'),active=clips.filter(x=>!isAudio(x)&&playhead>=x.start&&playhead<x.start+x.duration).sort((a,b)=>a.track-b.track);
 frame.querySelectorAll('video').forEach(v=>{v.pause();v.removeAttribute('src');v.load()});
 frame.innerHTML='';
-if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl=null}
+previewObjectUrls.forEach(URL.revokeObjectURL);previewObjectUrls=[]
 if(!active.length){let e=document.createElement('div');e.className='empty-preview';e.textContent='Nothing at the playhead';frame.append(e);return}
 for(let c of active){
 let a=clipAsset(c);if(!a)continue;
-let url=URL.createObjectURL(a.blob);previewObjectUrl=url;
+let url=URL.createObjectURL(a.blob);previewObjectUrls.push(url);
 let layer;
 if(a.type.startsWith('video/')){
 let v=document.createElement('video');v.src=url;v.muted=true;v.defaultMuted=true;v.playsInline=true;v.preload='auto';v.autoplay=!!playing;v.dataset.clipId=c.id;v.__clip=c;v.style.background='transparent';v.style.objectFit=c.scaleMode==='fill'?'cover':c.scaleMode==='stretch'?'fill':'contain';v.style.objectPosition='center center';
@@ -115,7 +115,7 @@ if(!playing)return;if(!lastTick)lastTick=now;playhead+=(now-lastTick)/1000;lastT
 if(playhead>=duration()){playhead=0;pause()}
 updatePlayhead();
 let active=clips.filter(c=>!isAudio(c)&&playhead>=c.start&&playhead<c.start+c.duration);
-let shown=[...$('previewFrame').querySelectorAll('video')].map(v=>v.__clip?.id).filter(Boolean);
+let shown=[...new Set([...$('previewFrame').querySelectorAll('[data-clip-id]')].map(el=>el.dataset.clipId))];
 let ids=active.map(c=>c.id);
 if(ids.length!==shown.length||ids.some(id=>!shown.includes(id)))renderPreview();
 else{
