@@ -63,7 +63,8 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ steps.version.outputs.version }}"
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$version" installer.iss
+          $buildVersion = "$version.0"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$buildVersion" installer.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed." }
 
       - name: Publish GitHub Release
