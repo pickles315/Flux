@@ -1,0 +1,29 @@
+{
+  "name": "flux-video-editor",
+  "version": "1.0.0",
+  "description": "Flux desktop video editor",
+  "main": "desktop/main.js",
+  "author": "pickles315",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "build:dir": "electron-builder --win dir",
+    "build:portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.pickles315.flux",
+    "productName": "Flux",
+    "asar": true,
+    "directories": { "output": "dist" },
+    "files": ["index.html", "styles/**/*", "scripts/**/*", "desktop/**/*", "package.json"],
+    "win": {
+      "target": ["dir", "portable"],
+      "artifactName": "Flux-${version}-${target}.${ext}"
+    },
+    "portable": { "artifactName": "Flux-${version}-Portable.${ext}" }
+  }
+}
