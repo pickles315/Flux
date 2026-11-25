@@ -1,0 +1,76 @@
+name: Build and release Flux for Windows
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flux-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate next release version
+        id: version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $releases = gh release list --limit 1 --json tagName | ConvertFrom-Json
+          if ($releases.Count -eq 0) { $version = '1.0' }
+          else {
+            $latest = [string]$releases[0].tagName
+            if ($latest -notmatch '^v1\.(\d+)$') { throw "Unexpected latest release tag: $latest" }
+            $version = "1.$([int]$Matches[1] + 1)"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Building Flux $version"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Set package version
+        shell: pwsh
+        run: |
+          npm version "${{ steps.version.outputs.version }}.0" --no-git-tag-version
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Windows app
+        run: npm run build:dir
+
+      - name: Build portable executable
+        run: npm run build:portable
+
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DAppVersion=$version" installer.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed." }
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          gh release create "v$version" "dist/Flux-Setup-$version.exe" "dist/Flux-$version-Portable.exe" --title "Flux $version" --notes "Windows installer and portable executable for Flux $version." --latest
