@@ -128,7 +128,7 @@ $('previewFrame').querySelectorAll('video, img, canvas').forEach(el=>{let c=el._
 }
 raf=requestAnimationFrame(tick)
 }
-function pause(){playing=false;cancelAnimationFrame(raf);lastTick=0;$('playBtn').textContent='▶ Play';let v=$('previewFrame').querySelector('video');if(v)v.pause()}
+function pause(){playing=false;cancelAnimationFrame(raf);lastTick=0;$('playBtn').textContent='▶ Play';$('previewFrame').querySelectorAll('video').forEach(v=>v.pause())}
 function togglePlay(){if(playing){pause();return}playing=true;$('playBtn').textContent='Ⅱ Pause';lastTick=0;raf=requestAnimationFrame(tick);let v=$('previewFrame').querySelector('video');if(v)v.play().catch(()=>{})}
 function split(){let c=clips.find(x=>x.id===selectedClip);if(!c||playhead<=c.start||playhead>=c.start+c.duration)return;let right={...c,id:uid(),start:playhead,sourceStart:(c.sourceStart||0)+(playhead-c.start),duration:c.start+c.duration-playhead};c.duration=playhead-c.start;clips.push(right);selectedClip=right.id;renderTimeline();renderInspector();saveProject()}
 async function load(){await openDB();let records=await all();assets=records.filter(x=>x.kind==='asset');projects=records.filter(x=>x.kind==='project');let legacy=records.filter(x=>!x.kind&&x.clips);for(let p of legacy){p.kind='project';p.ratio='16:9';p.width=1920;p.height=1080;p.fps=30;projects.push(p);await put(projectRecord(p))}renderDashboard();if(projects.length)showDashboard();else $('projectModal').classList.remove('hidden')}
