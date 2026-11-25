@@ -8,7 +8,8 @@
   "scripts": {
     "start": "electron .",
     "build:dir": "electron-builder --win dir",
-    "build:portable": "electron-builder --win portable"
+    "build:portable": "electron-builder --win portable",
+    "build:all": "electron-builder --win dir portable"
   },
   "devDependencies": {
     "electron": "^35.0.0",
@@ -18,12 +19,25 @@
     "appId": "com.pickles315.flux",
     "productName": "Flux",
     "asar": true,
-    "directories": { "output": "dist" },
-    "files": ["index.html", "styles/**/*", "scripts/**/*", "desktop/**/*", "package.json"],
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "styles/**/*",
+      "scripts/**/*",
+      "desktop/**/*",
+      "package.json"
+    ],
     "win": {
-      "target": ["dir", "portable"],
+      "target": [
+        "dir",
+        "portable"
+      ],
       "artifactName": "Flux-${version}-${target}.${ext}"
     },
-    "portable": { "artifactName": "Flux-${version}-Portable.${ext}" }
+    "portable": {
+      "artifactName": "Flux-${version}-Portable.${ext}"
+    }
   }
 }
