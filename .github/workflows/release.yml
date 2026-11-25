@@ -50,11 +50,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Windows app
-        run: npm run build:dir
-
-      - name: Build portable executable
-        run: npm run build:portable
+      - name: Build Windows app and portable executable
+        run: npm run build:all
 
       - name: Install Inno Setup
         run: choco install innosetup --yes --no-progress
