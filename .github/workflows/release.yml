@@ -45,7 +45,7 @@ jobs:
       - name: Set package version
         shell: pwsh
         run: |
-          npm version "${{ steps.version.outputs.version }}.0" --no-git-tag-version
+          npm pkg set version="${{ steps.version.outputs.version }}.0"
 
       - name: Install dependencies
         run: npm install
